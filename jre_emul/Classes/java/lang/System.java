@@ -444,6 +444,7 @@ public class System {
    */
   public static void runFinalizersOnExit(boolean b) {}
 
+  private static volatile Console cons = null;
   /**
    * Returns the {@link java.io.Console} associated with this VM, or null.
    * Not all VMs will have an associated console. A console is typically only
@@ -451,7 +452,15 @@ public class System {
    * @since 1.6
    */
   public static Console console() {
-      return Console.getConsole();
+    // Android-changed: Added proper double checked locking for cons access
+    if (cons == null) {
+      synchronized (System.class) {
+        if (cons == null) {
+          cons = Console.console();
+        }
+      }
+    }
+    return cons;
   }
 
   // Android internal logging methods, rewritten to use Logger.
